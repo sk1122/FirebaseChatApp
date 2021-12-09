@@ -31,7 +31,7 @@ export default function ChatRoom({ id }) {
 			</Head>
 			<div>
 				<Navbar />
-				<Chat />
+				<Chat chatId={id} />
 			</div>
     	</>
   	)

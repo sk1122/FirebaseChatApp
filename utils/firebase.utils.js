@@ -1,6 +1,7 @@
 import * as firebase from "firebase/app";
-import { getDatabase, ref, set, get, child } from "firebase/database"
+import { getDatabase, ref, set, get, child, serverTimestamp } from "firebase/database"
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { MD5 } from "./MD5";
 
 export default class Firebase {
 	constructor() {
@@ -88,18 +89,76 @@ export default class Firebase {
 		
 	}
 
-	async getUser(email) {
+	async getUser(uid) {
+		console.log(uid)
 		const valueSnapshot = await get(child(this.dbRef, `users/`))
 		const data = valueSnapshot.exists() ? valueSnapshot.val() : {};
 		return Object.entries(data).map(async (value) => {
-			if(value[1]["email"] === email) {
-				return value[0]
-			}
+			console.log(value[1].uid)
+			if(value[1].uid === uid) return value
 		})
-		// console.log(promises)
-		// await Promise.all(promises).then((value) => {
-		// 		return value
-		// 	}
-		// );
+	}
+
+	async getMsgs(chatId) {
+		const valueSnapshot = await get(child(this.dbRef, `messages/${chatId}`))
+		const data = valueSnapshot.exists() ? valueSnapshot.val() : {};
+		return data
+	}
+
+	async addMsg(chatId, msg, user) {
+		const date_time = new Date().toISOString()
+		const hash = MD5(date_time + user + msg)
+		const valueSnapshot = await get(child(this.dbRef, `messages/${chatId}`))
+		const chatValue = valueSnapshot.exists() ? valueSnapshot.val() : {};
+		await set(ref(this.db, `messages/${chatId}/${hash}`), {
+			user: user,
+			msg: msg,
+			date_time: date_time
+		})
+	}
+
+	async checkIfOnline(uid) {
+		// Create a reference to this user's specific status node.
+		// This is where we will store data about being online/offline.
+		var userStatusDatabaseRef = ref(this.db, '/status/' + uid);
+
+		// We'll create two constants which we will write to 
+		// the Realtime database when this device is offline
+		// or online.
+		var isOfflineForDatabase = {
+			state: 'offline',
+			last_changed: serverTimestamp(),
+		};
+
+		var isOnlineForDatabase = {
+			state: 'online',
+			last_changed: serverTimestamp(),
+		};
+
+		// Create a reference to the special '.info/connected' path in 
+		// Realtime Database. This path returns `true` when connected
+		// and `false` when disconnected.
+		ref(this.db, '.info/connected').on('value', function(snapshot) {
+			// If we're not currently connected, don't do anything.
+			console.log(snapshot.val())
+			if (snapshot.val() == false) {
+				return;
+			};
+			console.log(snapshot.val())
+			// If we are currently connected, then use the 'onDisconnect()' 
+			// method to add a set which will only trigger once this 
+			// client has disconnected by closing the app, 
+			// losing internet, or any other means.
+			userStatusDatabaseRef.onDisconnect().set(isOfflineForDatabase).then(function() {
+				// The promise returned from .onDisconnect().set() will
+				// resolve as soon as the server acknowledges the onDisconnect() 
+				// request, NOT once we've actually disconnected:
+				// https://firebase.google.com/docs/reference/js/firebase.database.OnDisconnect
+
+				// We can now safely set ourselves as 'online' knowing that the
+				// server will mark us as offline once we lose connection.
+				userStatusDatabaseRef.set(isOnlineForDatabase);
+			});
+		});
 	}
 }

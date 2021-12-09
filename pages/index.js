@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Navbar from '../components/navbar'
 import Form from '../components/form'
 import { useAppContext } from './_context'
+import Firebase from '../utils/firebase.utils'
 
 export default function Home() {
   let { error, newError } = useAppContext()
@@ -20,6 +21,7 @@ export default function Home() {
       <div className='flex flex-col justify-center items-center'>
         <Navbar />
         <Form />
+
       </div>
     </>
   )

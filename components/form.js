@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
+import useState from 'react-usestateref'
 import Firebase from "../utils/firebase.utils"
-import { MD5 } from "../utils/MD5"
+import { MD5, sortAlphabets } from "../utils/MD5"
 import { useAppContext } from "../pages/_context"
+import Router from 'next/router'
 
 export default function Form() {
 	const { newError } = useAppContext()
@@ -10,7 +12,7 @@ export default function Form() {
 	const [email, setEmail] = useState('')
 	const [user1, setUser1] = useState('')
 
-	const [account, setAccount] = useState(null)
+	const [account, setAccount, accountRef] = useState(null)
 	const [isAuthenticated, setIsAuthenticated] = useState(false)
 
 	useEffect(() => {
@@ -22,6 +24,7 @@ export default function Form() {
 	
 	const submit = async () => {
 		const emailList = await firebase.getUser(user1)
+		console.log(await emailList)
 		await emailList.map(async value => {
 			const v = await value
 			if(v !== undefined) {
@@ -35,12 +38,12 @@ export default function Form() {
 		// account wtf
 		setIsAuthenticated(JSON.parse(localStorage.getItem('isAuthenticated')))
 		setAccount(JSON.parse(localStorage.getItem('account')))
-		console.log(email, (JSON.parse(localStorage.getItem('account'))))
+
 		if(email.length > 0) {
-			console.log(account)
-			const chatId = MD5(email + account)
-			console.log(chatId, email, account["uid"])
-			firebase.get_or_create(chatId, email, account["uid"])
+			console.log(email[0])
+			const chatId = MD5(sortAlphabets(email[0] + accountRef.current["uid"]))
+			firebase.get_or_create(chatId, email[0], accountRef.current["uid"])
+			Router.push('/chats/' + chatId)
 		} else {
 			console.log(1)
 		}
