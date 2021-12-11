@@ -1,8 +1,9 @@
 import useState from 'react-usestateref'
 import { useEffect } from 'react'
 import Firebase from '../utils/firebase.utils'
-import { MD5 } from '../utils/MD5'
-import { getDatabase, ref, onValue } from "firebase/database";
+import { MD5, sortAlphabets } from '../utils/MD5'
+import Router from "next/router"
+import { getDatabase, ref, onValue, get, child, set } from "firebase/database";
 
 export default function Chat({ chatId }) {
 	const firebase = new Firebase()
@@ -13,14 +14,52 @@ export default function Chat({ chatId }) {
 	const [msgValue, setMsgValue, msgValueRef] = useState('')
 	const [msgs, setMsgs, msgsRef] = useState([])
 
+	const clickedChatNotSender = (chatId) => {
+		return msgs ? false : msgs[msgs.length - 1][1].user !== accountRef.current.uid 
+	}
+
+	const msgRead = (chatId, msgId) => {
+		if(true) {
+			const db = getDatabase();
+			const dbRef = ref(db);
+			get(child(dbRef, 'messages/' + chatId)).then((snapshot) => {
+				console.log(snapshot.val())
+				Object.entries(snapshot.val()).forEach(async function(child) {
+					// console.log(child.key)
+					const { is_seen, is_delivered, ...data } = child[1] 
+					if(data.user !== accountRef.current.uid) {
+						await set(ref(db, 'messages/' + chatId + '/' + child[0]), {
+							is_seen: true,
+							is_delivered: true,
+							...data
+						})
+					}
+				});
+				
+			}).catch((error) => {
+				console.error(error);
+			});
+			  
+		}
+	}
+
+	useEffect(() => {
+		msgRead(chatId, !msgs ? msgs[msgs.length - 1][0]:null)
+	}, [])
+
 	const findUser = async (user) => {
 		const emailList = await firebase.getUser(user)
 		await emailList.map(async value => {
-			console.log(value)
 			const v = await value
 			console.log(v)
 			if(v) {
 				console.log(v)
+				const hash = MD5(sortAlphabets(accountRef.current.uid + v[1].uid))
+				console.log(accountRef.current.uid + v[1].uid)
+				console.log(hash, chatId, "Ds")
+				if(hash !== chatId) {
+					Router.push('/')
+				}
 				if(v[1].uid === user) {
 					// console.log(v)
 					setUser(v)
@@ -59,20 +98,6 @@ export default function Chat({ chatId }) {
 	}, [])
 
 	useEffect(() => {
-		// console.log(userRef.current[1]["photoURL"])
-		// if(typeof userRef.current[1] !== 'undefined')console.log(userRef.current[1].displayName)
-		// console.log(userRef.current, "ewqejqenqwljkqwnejk")
-
-	}, [user])
-
-	// useEffect(() => {
-	// 	(async () => {
-	// 		const msgs = await firebase.getMsgs(msgs)
-	// 		console.log(msgs)
-	// 	})()
-	// })
-
-	useEffect(() => {
 		const db = getDatabase();
 		const dbRef = ref(db, 'messages/' + chatId);
 		onValue(dbRef, (snapshot) => {
@@ -80,13 +105,17 @@ export default function Chat({ chatId }) {
 			if(!data) data = {}
 			data = Object.entries(data).sort((a,b) => new Date(a[1].date_time) - new Date(b[1].date_time))
 			setMsgs(data);
+			msgRead(chatId, !msgsRef.current ? msgsRef.current[msgsRef.current.length - 1][0]:null)
 		});
 	}, [])
+
+	useEffect(() => {
+		console.log(userRef.current, "dsadsadsadas")
+	})
 
 	const addMsg = async () => {
 		// const chatId = MD5(accountRef.current.uid + userRef.current.uid)
 		await firebase.addMsg(chatId, msgValueRef.current, accountRef.current.uid)
-		firebase.checkIfOnline(accountRef.current["uid"])
 	}
 
 	const ConditionalWrapper = ({ value, condition }) => {
@@ -96,7 +125,17 @@ export default function Chat({ chatId }) {
 				<div className="flex items-end justify-end">
 					<div className="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-1 items-end">
 					<div><span className="px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white ">{value.msg}</span></div>
-					<span className='font-sm'>{new Date(value.date_time).toString()}</span>
+					<span className='font-sm'>{new Date(value.date_time).toLocaleString()}</span>
+					{value.is_sent ? (value.is_delivered ? (value.is_seen ? 
+						<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="black">
+							<path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+						</svg> : 
+						<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="black">
+							<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+						</svg>) : 
+						<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="black">
+							<path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+					  	</svg>) : <div></div>}
 					</div>
 					<img src={accountRef.current.photoURL} alt="My profile" className="w-6 h-6 rounded-full order-2" />
 				</div>
@@ -106,7 +145,7 @@ export default function Chat({ chatId }) {
 				<div className="flex items-end">
 					<div className="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 items-start">
 					<div><span className="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600">{value.msg}</span></div>
-					<span className='font-sm'>{new Date(value.date_time).toString()}</span>
+					<span className='font-sm'>{new Date(value.date_time).toLocaleString()}</span>
 					</div>
 					<img src={userRef.current[1] && userRef.current[1].photoURL} alt="My profile" className="w-6 h-6 rounded-full order-1" />
 				</div>
@@ -124,7 +163,7 @@ export default function Chat({ chatId }) {
 							<span className="text-gray-700 mr-3">{typeof userRef.current[1] !== 'undefined' && user[1].displayName}</span>
 							<span className="text-green-500">
 								<svg width="10" height="10">
-									<circle cx="5" cy="5" r="5" fill="currentColor"></circle>
+									{typeof userRef.current[1] !== 'undefined' && user[1].online ? (<circle cx="5" cy="5" r="5" fill="currentColor"></circle>) : (<circle cx="5" cy="5" r="5" fill="red"></circle>)}
 								</svg>
 							</span>
 						</div>

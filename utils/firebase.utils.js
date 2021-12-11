@@ -1,19 +1,27 @@
 import * as firebase from "firebase/app";
-import { getDatabase, ref, set, get, child, serverTimestamp } from "firebase/database"
+import { getDatabase, ref, set, get, child, onValue, onDisconnect, orderByChild } from "firebase/database"
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { MD5 } from "./MD5";
 
 export default class Firebase {
 	constructor() {
 		const firebaseConfig = {
-			apiKey: "AIzaSyAa0p6sLIBvRGsCDGKwwykUAoNllGPZAyo",
-			authDomain: "chat-app-595d1.firebaseapp.com",
-			projectId: "chat-app-595d1",
-			storageBucket: "chat-app-595d1.appspot.com",
-			messagingSenderId: "16967078319",
-			appId: "1:16967078319:web:bd6190a202e681bb9d5f5a",
-			measurementId: "G-Z23Q7JR0SP",
-			databaseURL: "https://chat-app-595d1-default-rtdb.asia-southeast1.firebasedatabase.app/"
+			apiKey: process.env.NEXT_PUBLIC_API_KEY,
+			authDomain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
+			projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+			storageBucket: process.env.NEXT_PUBLIC_STORAGE_BUCKET,
+			messagingSenderId: process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID,
+			appId: process.env.NEXT_PUBLIC_APP_ID,
+			measurementId: process.env.NEXT_PUBLIC_MEASUREMENT_ID,
+			databaseURL: process.env.NEXT_PUBLIC_DATABASE_URL
+			// apiKey: "AIzaSyAa0p6sLIBvRGsCDGKwwykUAoNllGPZAyo",
+			// authDomain: "chat-app-595d1.firebaseapp.com",
+			// projectId: "chat-app-595d1",
+			// storageBucket: "chat-app-595d1.appspot.com",
+			// messagingSenderId: "16967078319",
+			// appId: "1:16967078319:web:bd6190a202e681bb9d5f5a",
+			// measurementId: "G-Z23Q7JR0SP",
+			// databaseURL: "https://chat-app-595d1-default-rtdb.asia-southeast1.firebasedatabase.app/"
 		};
 	
 		// Initialize Firebase
@@ -113,52 +121,55 @@ export default class Firebase {
 		await set(ref(this.db, `messages/${chatId}/${hash}`), {
 			user: user,
 			msg: msg,
-			date_time: date_time
+			date_time: date_time,
+			is_sent: true,
+			is_delivered: false,
+			is_seen: false
+		})
+	}
+
+	async setAllMsgDelivered(uid) {
+		console.log("321321")
+		ref(this.db, 'chatRooms/').orderByChild('user1').equalTo(uid).on("value", (snap) => {
+			console.log(snap.val(), ' ', uid)
+		})
+		ref(this.db, 'chatRooms/').orderByChild('user2').equalTo(uid).on("value", (snap) => {
+			console.log(snap.val(), " ", uid)
 		})
 	}
 
 	async checkIfOnline(uid) {
-		// Create a reference to this user's specific status node.
-		// This is where we will store data about being online/offline.
-		var userStatusDatabaseRef = ref(this.db, '/status/' + uid);
+		if(!uid) return
+		console.log(uid)
+		const connectedRef = ref(this.db, ".info/connected");
 
-		// We'll create two constants which we will write to 
-		// the Realtime database when this device is offline
-		// or online.
-		var isOfflineForDatabase = {
-			state: 'offline',
-			last_changed: serverTimestamp(),
-		};
+		const valueSnapshot = await get(child(this.dbRef, `users/${uid}`))
+		const {online, ...data} = valueSnapshot.exists() ? valueSnapshot.val() : {};
 
-		var isOnlineForDatabase = {
-			state: 'online',
-			last_changed: serverTimestamp(),
-		};
-
-		// Create a reference to the special '.info/connected' path in 
-		// Realtime Database. This path returns `true` when connected
-		// and `false` when disconnected.
-		ref(this.db, '.info/connected').on('value', function(snapshot) {
-			// If we're not currently connected, don't do anything.
-			console.log(snapshot.val())
-			if (snapshot.val() == false) {
+		onValue(connectedRef, async (snap) => {
+			if (snap.val() == false) {
 				return;
 			};
-			console.log(snapshot.val())
-			// If we are currently connected, then use the 'onDisconnect()' 
-			// method to add a set which will only trigger once this 
-			// client has disconnected by closing the app, 
-			// losing internet, or any other means.
-			userStatusDatabaseRef.onDisconnect().set(isOfflineForDatabase).then(function() {
-				// The promise returned from .onDisconnect().set() will
-				// resolve as soon as the server acknowledges the onDisconnect() 
-				// request, NOT once we've actually disconnected:
-				// https://firebase.google.com/docs/reference/js/firebase.database.OnDisconnect
-
-				// We can now safely set ourselves as 'online' knowing that the
-				// server will mark us as offline once we lose connection.
-				userStatusDatabaseRef.set(isOnlineForDatabase);
-			});
+			onDisconnect(ref(this.db, `/users/${uid}`)).set({online: false, ...data})
+				.then(async () => {
+					await set(ref(this.db, `/users/${uid}`), { online: true, ...data })
+				})
 		});
+	}
+
+	async get_from_database(route) {
+		const valueSnapshot = await get(child(this.dbRef, route))
+		const data = valueSnapshot.exists() ? valueSnapshot.val() : {};
+		return data
+	}
+
+	async update_sent(route, send_data) {
+		const valueSnapshot = await get(child(this.dbRef, route))
+		const { is_sent, is_delivered, data} = valueSnapshot.exists() ? valueSnapshot.val() : {};
+		print(data, "jhjhjhjhj")
+		await set(ref(this.db, route), {
+			...send_data,
+			...data
+		})
 	}
 }
