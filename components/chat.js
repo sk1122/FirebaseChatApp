@@ -190,8 +190,7 @@ export default function Chat({ chatId }) {
 			<div id="messages" className="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
 				{isAuthenticated && msgs.map((value) => {
 					return (
-						<ConditionalWrapper value={value[1]} condition={value[1].user === accountRef.current.uid}>
-							
+						<ConditionalWrapper value={value[1]} condition={value[1].user === accountRef.current.uid} key={value[1].user}>
 						</ConditionalWrapper>
 					)
 				})}
