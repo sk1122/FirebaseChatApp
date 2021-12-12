@@ -14,18 +14,20 @@ export default function Profile() {
 	return (
 		<>
 			<Head>
-				{isAuthenticated && 
-					<title>{account["displayName"]}</title>
-				}
+				<title>{isAuthenticated && 
+					account["displayName"]
+				}</title>
 			</Head>
 
-			{isAuthenticated &&
-				<div className="flex flex-col justify-center items-center text-3xl">
-					<img src={account["photoURL"]} alt="" className="rounded-full" />
-					<h1>{account["displayName"]}</h1>
-					<h1>{account["email"]}</h1>
+			<div className="flex flex-col justify-center items-center text-3xl">
+				{isAuthenticated &&
+					<div>
+						<img src={account["photoURL"]} alt="" className="rounded-full" />
+						<h1>{account["displayName"]}</h1>
+						<h1>{account["email"]}</h1>
+					</div>
+				}
 				</div>
-			}
 		</>
 	)
 }

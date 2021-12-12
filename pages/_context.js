@@ -2,7 +2,7 @@ import { useState, createContext, useContext } from 'react';
 
 const AppContext = createContext();
 
-export function AppWrapper({ children }) {
+export default function AppWrapper({ children }) {
 	
 	const [error, setError] = useState('')
 

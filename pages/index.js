@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useEffect } from 'react'
+import React, { useEffect } from "react"
 import { useAppContext } from './_context'
 import useState from "react-usestateref"
 
@@ -17,8 +17,8 @@ export default function Home() {
 	const [user, setUser, userRef] = useState({})
   
   const msgRead = () => {
-		if(true) {
-			const db = getDatabase();
+    if(true) {
+      const db = getDatabase();
 			const dbRef = ref(db);
 			get(child(dbRef, 'messages/')).then((snapshot) => {
 				Object.entries(snapshot.val()).forEach(async function(firstChild) {
@@ -39,9 +39,9 @@ export default function Home() {
 				});
 				
 			}).catch((error) => {
-				console.error(error);
+        console.error(error);
 			});
-			  
+      
 		}
 	}
 
@@ -66,7 +66,7 @@ export default function Home() {
       try {
         firebase.checkIfOnline(accountRef.current["uid"])
       } catch(e) {
-        return
+        console.log(e)
       }
     })()
   }, [])

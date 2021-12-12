@@ -1,6 +1,6 @@
 import 'tailwindcss/tailwind.css'
 
-import { AppWrapper } from './_context'
+import AppWrapper from './_context'
 
 function MyApp({ Component, pageProps }) {
   return (
