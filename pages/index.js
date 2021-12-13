@@ -8,6 +8,12 @@ import Online from '../components/Online'
 import Firebase from '../utils/firebase.utils'
 import { getDatabase, ref, onValue, get, child, set, onChildAdded } from "firebase/database";
 
+export async function getServerSideProps() {
+  return {
+    props: {}
+  }
+}
+
 export default function Home() {
   // let { error, newError } = useAppContext()
   const firebase = new Firebase()

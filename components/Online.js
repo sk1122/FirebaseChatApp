@@ -3,6 +3,7 @@ import { useEffect } from "react"
 import Firebase from "../utils/firebase.utils"
 import { MD5, sortAlphabets } from "../utils/MD5"
 import Router from "next/router"
+import { getDatabase, ref, onValue, get, child, set, onChildAdded } from "firebase/database";
 
 export default function Online() {
 	const firebase = new Firebase()
@@ -12,11 +13,15 @@ export default function Online() {
 
 	useEffect(() => {
 		(async () => {
-			const data = await firebase.get_from_database('users/')
-			console.log(Object.values(data))
-			if(data) {
-				setUsers(Object.values(data))
-			}
+			const db = getDatabase();
+			const dbRef = ref(db, 'users/');
+			onValue(dbRef, (snapshot) => {
+				console.log(snapshot.val())
+				Object.values(snapshot.val()).map((val) => {
+					firebase.checkIfOnline(val.uid)
+				})
+				setUsers(Object.values(snapshot.val()))
+			});
 		})()
 	}, [])
 	
