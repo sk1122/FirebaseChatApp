@@ -1,8 +1,7 @@
-import Head from 'next/head'
 import React, { useEffect } from "react"
-import { useAppContext } from './_context'
+import Head from 'next/head'
+// import { useAppContext } from './_context'
 import useState from "react-usestateref"
-
 import Navbar from '../components/navbar'
 import Form from '../components/form'
 import Online from '../components/Online'
@@ -10,7 +9,7 @@ import Firebase from '../utils/firebase.utils'
 import { getDatabase, ref, onValue, get, child, set, onChildAdded } from "firebase/database";
 
 export default function Home() {
-  let { error, newError } = useAppContext()
+  // let { error, newError } = useAppContext()
   const firebase = new Firebase()
 	const [account, setAccount, accountRef] = useState([])
 	const [isAuthenticated, setIsAuthenticated, isAuthenticatedRef] = useState(false)
@@ -53,23 +52,23 @@ export default function Home() {
 		});
   }, [])
 
-  useEffect(() => {
-    console.log(error, "Dsa")
-  }, [error])
+  // useEffect(() => {
+  //   console.log(error, "Dsa")
+  // }, [error])
 
-  useEffect(() => {
-    (async () => {
-      await setTimeout(() => {}, 10000)
-      setUser({})
-      setAccount(JSON.parse(localStorage.getItem('account')))
-      setIsAuthenticated(JSON.parse(localStorage.getItem('isAuthenticated')))
-      try {
-        firebase.checkIfOnline(accountRef.current["uid"])
-      } catch(e) {
-        console.log(e)
-      }
-    })()
-  }, [])
+  // useEffect(() => {
+  //   (async () => {
+  //     // await setTimeout(() => {}, 10000)
+  //     setUser({})
+  //     setAccount(JSON.parse(localStorage.getItem('account')))
+  //     setIsAuthenticated(JSON.parse(localStorage.getItem('isAuthenticated')))
+  //     try {
+  //       firebase.checkIfOnline(accountRef.current["uid"])
+  //     } catch(e) {
+  //       console.log(e)
+  //     }
+  //   })();
+  // }, [])
   
   return (
     <>

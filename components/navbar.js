@@ -5,10 +5,10 @@ import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
 
 import Firebase from "../utils/firebase.utils"
-import { useAppContext } from "../pages/_context"
+// import { useAppContext } from "../pages/_context"
 
 const navigation = [
-  { name: 'Yo', href: '#', current: true }
+  { name: 'Yo', href: '/yo', current: true }
 ]
 
 function classNames(...classes) {
@@ -19,7 +19,7 @@ export default function Navbar() {
 	const [account, setAccount] = useState(null)
 	const [isAuthenticated, setIsAuthenticated] = useState(false)
 	
-	const { newError } = useAppContext()
+	// const { newError } = useAppContext()
 
 	useEffect(() => {
 		setIsAuthenticated(JSON.parse(localStorage.getItem('isAuthenticated')))
@@ -33,11 +33,11 @@ export default function Navbar() {
 
 	const firebase = new Firebase()
 	const login = () => {
-		firebase.signIn(setAccount, setIsAuthenticated, newError)
+		firebase.signIn(setAccount, setIsAuthenticated)
 	}
 
 	const logout = () => {
-		firebase.signOutGoogle(setAccount, setIsAuthenticated, newError)
+		firebase.signOutGoogle(setAccount, setIsAuthenticated)
 	}
 
 	return (

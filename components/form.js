@@ -2,11 +2,11 @@ import { useEffect } from "react"
 import useState from 'react-usestateref'
 import Firebase from "../utils/firebase.utils"
 import { MD5, sortAlphabets } from "../utils/MD5"
-import { useAppContext } from "../pages/_context"
+// import { useAppContext } from "../pages/_context"
 import Router from 'next/router'
 
 export default function Form() {
-	const { newError } = useAppContext()
+	// const { newError } = useAppContext()
 	
 	const firebase = new Firebase()
 	const [email, setEmail] = useState('')

@@ -1,5 +1,5 @@
 import useState from "react-usestateref"
-import { useEffect } from "react/cjs/react.development"
+import { useEffect } from "react"
 import Firebase from "../utils/firebase.utils"
 import { MD5, sortAlphabets } from "../utils/MD5"
 import Router from "next/router"

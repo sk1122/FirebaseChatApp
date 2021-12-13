@@ -31,7 +31,7 @@ export default class Firebase {
 		this.dbRef = ref(this.db)
 	}
 	
-	signIn = async (setAccount, setIsAuthenticated, newError) => {
+	signIn = async (setAccount, setIsAuthenticated) => {
 		const provider = new GoogleAuthProvider();
 		provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
 		
@@ -59,18 +59,18 @@ export default class Firebase {
 				
 				setAccount("")
 				setIsAuthenticated(false)
-				newError(JSON.stringify(error))
+				// newError(JSON.stringify(error))
 			});
 	}
 	
-	signOutGoogle = (setAccount, setIsAuthenticated, newError) => {
+	signOutGoogle = (setAccount, setIsAuthenticated) => {
 		const auth = getAuth();
 		signOut(auth)
 			.then(() => {
 				setAccount({})
 				setIsAuthenticated(false)
 			}).catch((error) => {
-				newError(JSON.stringify(error))
+				// newError(JSON.stringify(error))
 			});
 	}
 
