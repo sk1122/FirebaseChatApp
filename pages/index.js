@@ -51,11 +51,19 @@ export default function Home() {
 	}
 
   useEffect(() => {
-    const db = getDatabase();
-		const dbRef = ref(db, 'messages/');
-    onChildAdded(dbRef, (snapshot) => {
-      msgRead()
-		});
+    (async () => {
+      const db = getDatabase();
+      const dbRef = ref(db);
+      const valueSnapshot = await get(child(dbRef, `messages/`))
+      const msgValue = valueSnapshot.exists() ? valueSnapshot.val() : {};
+      Object.keys(msgValue).map(value => {
+        const dbRefMsg = ref(db, `messages/${value}`)
+        onChildAdded(dbRefMsg, (snapshot) => {
+          console.log("123")
+          msgRead()
+        });
+      })
+    })();
   }, [])
 
   // useEffect(() => {

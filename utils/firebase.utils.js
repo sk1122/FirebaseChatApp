@@ -30,8 +30,35 @@ export default class Firebase {
 		this.db = getDatabase(this.app)
 		this.dbRef = ref(this.db)
 	}
+
+	msgRead = () => {
+		if(true) {
+		  	const db = getDatabase();
+			const dbRef = ref(db);
+			get(child(dbRef, 'messages/')).then((snapshot) => {
+				Object.entries(snapshot.val()).forEach(async function(firstChild) {
+					// console.log(child.key)
+					if(true) {
+						Object.entries(firstChild[1]).forEach(async (child) => {
+							if(typeof child[1] == 'object') {
+								const { is_delivered, ...data } = child[1] 
+								if(accountRef.current && data.user !== accountRef.current.uid) {
+									await set(ref(db, 'messages/' + firstChild[0] + '/' + child[0]), {
+										is_delivered: true,
+										...data
+									})
+								}
+							}
+						})
+					}
+				});	
+			}).catch((error) => {
+				console.error(error);
+			});
+		}
+	}
 	
-	signIn = async (setAccount, setIsAuthenticated) => {
+	signIn = async (account, setAccount, setIsAuthenticated) => {
 		const provider = new GoogleAuthProvider();
 		provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
 		
@@ -46,6 +73,7 @@ export default class Firebase {
 				const userValue = valueSnapshot.exists() ? valueSnapshot.val() : {};
 				const {providerData, stsTokenManager, ...userData} = JSON.parse(JSON.stringify(user))
 				await set(ref(this.db, `users/${user.uid}`), {online: true, ...userData})
+				this.msgRead(account)
 				// console.log(userData)
 				setAccount(user)
 				setIsAuthenticated(true)

@@ -33,7 +33,7 @@ export default function Navbar() {
 
 	const firebase = new Firebase()
 	const login = () => {
-		firebase.signIn(setAccount, setIsAuthenticated)
+		firebase.signIn(account, setAccount, setIsAuthenticated)
 	}
 
 	const logout = () => {
