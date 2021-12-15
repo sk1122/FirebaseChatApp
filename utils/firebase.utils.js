@@ -45,7 +45,7 @@ export default class Firebase {
 				const valueSnapshot = await get(child(this.dbRef, `users/${user.uid}`))
 				const userValue = valueSnapshot.exists() ? valueSnapshot.val() : {};
 				const {providerData, stsTokenManager, ...userData} = JSON.parse(JSON.stringify(user))
-				await set(ref(this.db, `users/${user.uid}`), userData)
+				await set(ref(this.db, `users/${user.uid}`), {online: true, ...userData})
 				// console.log(userData)
 				setAccount(user)
 				setIsAuthenticated(true)
