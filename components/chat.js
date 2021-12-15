@@ -18,6 +18,20 @@ export default function Chat({ chatId }) {
 		return msgs ? false : msgs[msgs.length - 1][1].user !== accountRef.current.uid 
 	}
 
+	useEffect(() => {
+		(async () => {
+		  await setTimeout(() => {}, 10000)
+		  setUser({})
+		  setAccount(JSON.parse(localStorage.getItem('account')))
+		  setIsAuthenticated(JSON.parse(localStorage.getItem('isAuthenticated')))
+		  try {
+			firebase.checkIfOnline(accountRef.current["uid"])
+		  } catch(e) {
+			console.log(e)
+		  }
+		})();
+	  }, [])
+
 	const msgRead = (chatId, msgId) => {
 		if(true) {
 			const db = getDatabase();
