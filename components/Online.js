@@ -13,11 +13,16 @@ export default function Online() {
 
 	useEffect(() => {
 		(async () => {
-			const data = await firebase.get_from_database('users/')
-			console.log(Object.values(data))
-			if(data) {
-				setUsers(Object.values(data))
-			}
+			const db = getDatabase();
+			const dbRef = ref(db, 'users/');
+			onValue(dbRef, (snapshot) => {
+				setUsers(Object.values(snapshot.val()))
+			});
+			// const data = await firebase.get_from_database('users/')
+			// console.log(Object.values(data))
+			// if(data) {
+			// 	setUsers(Object.values(data))
+			// }
 		})()
 	}, [])
 	
