@@ -62,19 +62,19 @@ export default function Home() {
   //   console.log(error, "Dsa")
   // }, [error])
 
-  // useEffect(() => {
-  //   (async () => {
-  //     // await setTimeout(() => {}, 10000)
-  //     setUser({})
-  //     setAccount(JSON.parse(localStorage.getItem('account')))
-  //     setIsAuthenticated(JSON.parse(localStorage.getItem('isAuthenticated')))
-  //     try {
-  //       firebase.checkIfOnline(accountRef.current["uid"])
-  //     } catch(e) {
-  //       console.log(e)
-  //     }
-  //   })();
-  // }, [])
+  useEffect(() => {
+    (async () => {
+      await setTimeout(() => {}, 10000)
+      setUser({})
+      setAccount(JSON.parse(localStorage.getItem('account')))
+      setIsAuthenticated(JSON.parse(localStorage.getItem('isAuthenticated')))
+      try {
+        firebase.checkIfOnline(accountRef.current["uid"])
+      } catch(e) {
+        console.log(e)
+      }
+    })();
+  }, [])
   
   return (
     <>
