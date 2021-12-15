@@ -63,12 +63,16 @@ export default class Firebase {
 			});
 	}
 	
-	signOutGoogle = (setAccount, setIsAuthenticated) => {
+	signOutGoogle = (account, setAccount, setIsAuthenticated) => {
 		const auth = getAuth();
 		signOut(auth)
-			.then(() => {
+			.then(async () => {
 				setAccount({})
 				setIsAuthenticated(false)
+				const valueSnapshot = await get(child(this.dbRef, `users/${account.uid}`))
+				const {online, ...userValue} = valueSnapshot.exists() ? valueSnapshot.val() : {};
+				console.log(userValue.uid, "fdf")
+				await set(ref(this.db, `users/${userValue.uid}`), {online: false, ...userValue})
 			}).catch((error) => {
 				// newError(JSON.stringify(error))
 			});

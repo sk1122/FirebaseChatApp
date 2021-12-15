@@ -37,7 +37,7 @@ export default function Navbar() {
 	}
 
 	const logout = () => {
-		firebase.signOutGoogle(setAccount, setIsAuthenticated)
+		firebase.signOutGoogle(account, setAccount, setIsAuthenticated)
 	}
 
 	return (
